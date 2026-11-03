@@ -1,0 +1,172 @@
+# Hand-curated India model facts: the single input to catalogue generation.
+# Which of these models is built into products.csv is decided by config/active_scope.yaml,
+# not by this file: a model listed here but not in the scope file is ignored, and a model in
+# the scope file with no entry here is an error. Models outside the plan (16 Plus, 15 Pro,
+# 16e as active, iPhone Duo, etc.) are deliberately absent.
+#
+# Fields
+#   storage_mrp      launch MRP in INR per storage in GB (1024 = 1TB). Blank (null) = not verified.
+#   colours          names as sold in India; every colour is assumed sold at every storage
+#                    (colour x storage availability is NOT confirmed on the Apple India configurator).
+#   predecessor      model_key of the previous generation (null = no like-for-like predecessor).
+#   apple_store      listed | delisted  (state in Nov 2026 per the plan; delisting dates not verified).
+#   unverified       fields that could not be confirmed; copied into the CSV.
+#
+# verified_on / source: Apple India (apple.com/in) was NOT reachable from the build environment,
+# so every row rests on Indian press and retailer coverage found by web search on 2026-11-03.
+defaults:
+  verified_on: "2026-11-03"
+  verified_source: "Indian press/retailer coverage via web search (Apple India not reachable from build environment)"
+  common_unverified: ["apple_india_configurator", "colour_storage_availability", "part_numbers_and_retailer_ids"]
+
+models:
+  iphone-18-pro:
+    model: "iPhone 18 Pro"
+    generation: "18"
+    tier: "Pro"
+    segment: "Pro"
+    india_launch_date: "2026-09-18"
+    apple_store: listed
+    colours: [Black, Silver, Glacier, Burgundy]
+    storage_mrp: {256: 164900, 512: 189900, 1024: 239900, 2048: 314900}
+    predecessor: iphone-17-pro
+
+  iphone-18-pro-max:
+    model: "iPhone 18 Pro Max"
+    generation: "18"
+    tier: "Pro Max"
+    segment: "Pro Max"
+    india_launch_date: "2026-09-18"
+    apple_store: listed
+    colours: [Black, Silver, Glacier, Burgundy]
+    storage_mrp: {256: 179900, 512: 204900, 1024: 254900, 2048: 329900}
+    predecessor: iphone-17-pro-max
+
+  iphone-17-pro:
+    model: "iPhone 17 Pro"
+    generation: "17"
+    tier: "Pro"
+    segment: "Pro"
+    india_launch_date: "2025-09-19"
+    apple_store: delisted        # removed Sep 2026 per plan (Gizbot); exact date not verified
+    colours: [Silver, Deep Blue, Cosmic Orange]
+    storage_mrp: {256: 134900, 512: 154900, 1024: 174900}
+    predecessor: iphone-16-pro
+    unverified: ["apple_delisted_date"]
+
+  iphone-17-pro-max:
+    model: "iPhone 17 Pro Max"
+    generation: "17"
+    tier: "Pro Max"
+    segment: "Pro Max"
+    india_launch_date: "2025-09-19"
+    apple_store: delisted        # removed Sep 2026 per plan; not independently confirmed by search
+    colours: [Silver, Deep Blue, Cosmic Orange]
+    storage_mrp: {256: 149900, 512: 169900, 1024: 189900, 2048: 229900}
+    predecessor: iphone-16-pro-max
+    unverified: ["apple_delisted_date", "apple_store_status"]
+
+  iphone-17:
+    model: "iPhone 17"
+    generation: "17"
+    tier: "Base"
+    segment: "Entry and base"
+    india_launch_date: "2025-09-19"
+    apple_store: listed          # price raised Sep 2026 (256GB: 82,900 -> 99,900 per press); launch MRP kept here
+    colours: [Lavender, Sage, Mist Blue, White, Black]
+    storage_mrp: {256: 82900, 512: 102900}
+    predecessor: iphone-16
+
+  iphone-17e:
+    model: "iPhone 17e"
+    generation: "17"
+    tier: "e"
+    segment: "Entry and base"
+    india_launch_date: "2026-03-11"
+    apple_store: listed
+    colours: [Black, White, Soft Pink]
+    storage_mrp: {256: 64900, 512: 84900}
+    predecessor: iphone-16e
+
+  iphone-air:
+    model: "iPhone Air"
+    generation: "air"
+    tier: "Air"
+    segment: "Air"
+    india_launch_date: "2025-09-19"
+    apple_store: listed
+    colours: [Space Black, Cloud White, Light Gold, Sky Blue]
+    storage_mrp: {256: 119900, 512: 139900, 1024: 159900}
+    predecessor: null
+
+  iphone-16:
+    model: "iPhone 16"
+    generation: "16"
+    tier: "Base"
+    segment: "Entry and base"
+    india_launch_date: "2024-09-20"
+    apple_store: listed
+    colours: [Black, White, Pink, Teal, Ultramarine]
+    storage_mrp: {128: 79900, 256: 89900, 512: 109900}
+    predecessor: iphone-15
+
+  iphone-15:
+    model: "iPhone 15"
+    generation: "15"
+    tier: "Base"
+    segment: "Entry and base"
+    india_launch_date: "2023-09-22"
+    apple_store: delisted        # removed Sep 2025 per plan; exact date not verified
+    colours: [Black, Blue, Green, Yellow, Pink]
+    storage_mrp: {128: 79900, 256: 89900, 512: 109900}
+    predecessor: iphone-14
+    unverified: ["apple_delisted_date", "apple_store_status"]
+
+  # ---- reference-only (price_key grain only; no colour rows) ----
+  iphone-14:
+    model: "iPhone 14"
+    generation: "14"
+    tier: "Base"
+    segment: "Entry and base"
+    india_launch_date: "2022-09-16"
+    apple_store: unknown   # not stated in the plan; not verified
+    colours: []
+    storage_mrp: {128: 79900, 256: 89900, 512: 109900}
+    predecessor: null
+    unverified: ["apple_delisted_date", "apple_store_status"]
+
+  iphone-16e:
+    model: "iPhone 16e"
+    generation: "16"
+    tier: "e"
+    segment: "Entry and base"
+    india_launch_date: "2025-02-28"
+    apple_store: unknown   # not stated in the plan; not verified
+    colours: []
+    storage_mrp: {128: 59900, 256: 69900, 512: 89900}
+    predecessor: null
+    unverified: ["apple_delisted_date", "apple_store_status"]
+
+  iphone-16-pro:
+    model: "iPhone 16 Pro"
+    generation: "16"
+    tier: "Pro"
+    segment: "Pro"
+    india_launch_date: "2024-09-20"
+    apple_store: delisted
+    colours: []
+    storage_mrp: {128: 119900, 256: 129900, 512: 149900, 1024: 169900}
+    predecessor: null
+    unverified: ["apple_delisted_date"]
+
+  iphone-16-pro-max:
+    model: "iPhone 16 Pro Max"
+    generation: "16"
+    tier: "Pro Max"
+    segment: "Pro Max"
+    india_launch_date: "2024-09-20"
+    apple_store: delisted
+    colours: []
+    storage_mrp: {256: 144900, 512: 164900, 1024: 184900}
+    predecessor: null
+    unverified: ["apple_delisted_date"]
