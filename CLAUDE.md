@@ -25,17 +25,12 @@
 - Weeks are Sunday–Saturday, identified by `week_start`. Timestamps stored in UTC plus IST date.
 - Scraping: respect robots.txt and site terms; polite rate limits; stop on any site that prohibits automated access.
 
-## Environment setup
-Linux/macOS:
-```bash
-python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
-```
-Windows (PowerShell):
-```powershell
-py -m venv .venv; .venv\Scripts\Activate.ps1; pip install -e ".[dev]"
-```
-Optional extras: `.[sources]` (API clients), `.[browser]` (Playwright; then `python -m playwright install chromium`).
+## Collectors
+- Never write an HTML selector, API endpoint or response schema that has not been seen in a real response or official documentation. If it cannot be done reliably, ship a clearly marked incomplete implementation (see `collectors/retail.py`, `collectors/trends.py`).
+- Do not run live collection, call live APIs or generate datasets unless the task explicitly asks. Tests use only small, labelled in-memory fixtures and mocked HTTP.
+- Retail/scraped sources stay `enabled: false, terms_checked: false` in `config/sources.yaml` until their robots.txt and terms have been reviewed.
+- Secrets (API keys) are request parameters listed in `Target.secret_params`, so they never reach logs or provenance files.
 
 ## Testing and commits
-- Run `python -m pytest` before every commit; keep tests offline (no network calls in tests).
+- Setup commands are in README.md. Run `python -m pytest` before every commit; keep tests offline (no network calls in tests).
 - Commit small, descriptive changes; GitHub is the source of truth.

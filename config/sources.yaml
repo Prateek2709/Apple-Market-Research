@@ -1,0 +1,81 @@
+# Per-source collection settings. Retail/scraped sources ship DISABLED with terms_checked: false:
+# review each site's robots.txt and terms (plan: Implementation sequence, step 2), then set both flags.
+# Values marked "unverified" come from public documentation and have not been exercised against the service.
+defaults:
+  enabled: true
+  terms_checked: true        # only enforced for kind: retail
+  respect_robots: false      # true for scraped sites
+  min_interval_s: 2.0        # polite gap between requests to one source
+  timeout_s: 30
+  max_attempts: 5            # tenacity retries on timeouts, 429, 5xx (Retry-After honoured)
+  # user_agent: set MARKET_SIGNALS_USER_AGENT (e.g. "market-signals-research/0.1 (you@example.com)")
+
+sources:
+  # ---- Tier A: retailer product pages (fetch-only; pages come from catalogue/listings.csv)
+  apple_in:         {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [apple.com]}
+  amazon_in:        {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [amazon.in]}
+  flipkart:         {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [flipkart.com]}
+  croma:            {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [croma.com]}
+  reliance_digital: {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [reliancedigital.in]}
+  vijay_sales:      {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [vijaysales.com]}
+  # ---- Tier B: experimental (scrape; same fetch-only handling)
+  smartprix:        {kind: retail, tier: B, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [smartprix.com]}
+  mobiles91:        {kind: retail, tier: B, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [91mobiles.com]}
+  gsmarena:         {kind: retail, tier: B, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [gsmarena.com]}
+
+  # ---- Tier A: history and APIs
+  wayback:
+    kind: api
+    tier: A
+    min_interval_s: 1.5
+    cdx_url: https://web.archive.org/cdx/search/cdx
+    snapshot_url_template: "https://web.archive.org/web/{timestamp}id_/{original}"
+    url_sources: [apple_in]          # whose listings.csv pages to look up in the archive
+    cdx_limit: 5000
+    max_snapshots_per_run: 50
+  wikipedia:
+    kind: api
+    tier: A
+    min_interval_s: 0.5
+    base_url: https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article
+    project: en.wikipedia
+    access: all-access
+    agent: user
+    default_start: "2021-01-01"      # API holds data since 2015-07-01; the plan's other series cover ~5 years
+    articles: [IPhone_14, IPhone_15, IPhone_16, IPhone_16e, IPhone_17, IPhone_Air]   # titles unverified
+  frankfurter:
+    kind: api
+    tier: A
+    min_interval_s: 1
+    base_url: https://api.frankfurter.app     # per the plan's citation; unverified
+    default_start: "2021-01-01"
+  yfinance:
+    kind: api
+    tier: A
+    min_interval_s: 2
+    symbols: [AAPL, INR=X]
+    default_start: "2021-01-01"
+  gdelt:
+    kind: api
+    tier: A
+    min_interval_s: 6
+    base_url: https://api.gdeltproject.org/api/v2/doc/doc
+    modes: [timelinevol, timelinetone]
+    queries:                          # query syntax unverified
+      - {name: iphone_india_price, query: '"iPhone" (price OR launch OR sale OR duty) sourcecountry:india'}
+  youtube:
+    kind: api
+    tier: A
+    min_interval_s: 1
+    base_url: https://www.googleapis.com/youtube/v3
+    daily_quota: 10000
+    quota_reserve: 200
+    search_query_template: "{model} review India"
+    region_code: IN
+    max_videos_per_model: 5
+    search_refresh_days: 28
+    max_comment_pages_per_video: 5
+  trends:
+    kind: api
+    tier: A
+    enabled: false                    # incomplete: see market_signals/collectors/trends.py

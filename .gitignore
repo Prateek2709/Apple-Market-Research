@@ -17,8 +17,7 @@ env/
 ENV/
 
 # --- Data layers and generated outputs (see docs plan: raw/bronze/silver/gold/meta) ---
-data/*
-!data/README.md
+data/
 outputs/
 reports/
 *.parquet

@@ -8,32 +8,23 @@ version = "0.1.0"
 description = "Independent external market-signal dataset for the Indian iPhone market (Market Sentiment and Demand Pressure indicators)."
 readme = "README.md"
 requires-python = ">=3.11"
-# Core libraries named in the plan (Collection, cleaning and curation > Layout).
+# Needed by the collectors, catalogue and matching code that exist today.
 dependencies = [
     "httpx>=0.27",
-    "selectolax>=0.3.21",
-    "beautifulsoup4>=4.12",
     "tenacity>=8.2",
     "pandas>=2.2",
-    "pyarrow>=15",
-    "duckdb>=1.0",
     "rapidfuzz>=3.6",
-    "pydantic>=2.6",
     "pyyaml>=6.0",
+    "tzdata>=2024.1",  # IANA zones on Windows (YouTube quota day)
 ]
 
 [project.optional-dependencies]
-# Only for retailer pages that need JavaScript rendering.
-# After installing, run `python -m playwright install chromium` once per machine.
+# yfinance is the unofficial client used by the AAPL / USD-INR collector (imported lazily).
+sources = ["yfinance>=0.2.40"]
+# Needed once parsing / silver tables are written (plan layout); not used by collection code yet.
+curation = ["selectolax>=0.3.21", "beautifulsoup4>=4.12", "pyarrow>=15", "duckdb>=1.0", "pydantic>=2.6"]
+# Only for retailer pages that need JavaScript rendering (not used yet).
 browser = ["playwright>=1.44"]
-# Source-specific API clients (Tier A sources); install when those collectors are built.
-sources = [
-    "google-api-python-client>=2.120",  # YouTube Data API v3
-    "yfinance>=0.2.40",                  # AAPL, USD/INR
-    "trendspyg>=0.1",                    # unofficial Google Trends client (pytrends is archived)
-    "gdeltdoc>=1.5",                     # GDELT DOC API
-    "waybackpy>=3.0.6",                  # Wayback Machine CDX
-]
 dev = ["pytest>=8.0"]
 
 [tool.setuptools.packages.find]

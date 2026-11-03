@@ -7,9 +7,21 @@ Independent external market-signal dataset for the Indian iPhone market, produci
 - Working rules: [`CLAUDE.md`](CLAUDE.md)
 
 ## Setup
+Linux/macOS:
 ```bash
-python -m venv .venv
-. .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
-python -m pytest
+python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
+```
+Windows (PowerShell):
+```powershell
+py -m venv .venv; .venv\Scripts\Activate.ps1; pip install -e ".[dev]"
+```
+Extras: `.[sources]` (yfinance), `.[curation]` (parsing/silver libraries, later), `.[browser]` (Playwright, later).
+
+## Common commands
+```bash
+python -m pytest                          # offline tests
+python -m market_signals.catalogue validate
+python run.py list                        # collectors and their status
+python run.py collect --dry-run           # show planned requests; no network
+python run.py collect --sources wikipedia,frankfurter   # live collection, on demand
 ```
