@@ -11,7 +11,7 @@ defaults:
   # user_agent: set MARKET_SIGNALS_USER_AGENT (e.g. "market-signals-research/0.1 (you@example.com)")
 
 sources:
-  # ---- Tier A: retailer product pages (fetch-only; pages come from catalogue/listings.csv)
+  # ---- Tier A: retailer product pages (fetch-only; pages come from config/listings.csv)
   apple_in:         {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [apple.com]}
   amazon_in:        {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [amazon.in]}
   flipkart:         {kind: retail, tier: A, enabled: false, terms_checked: false, respect_robots: true, min_interval_s: 5, allowed_host_suffixes: [flipkart.com]}
@@ -78,4 +78,4 @@ sources:
   trends:
     kind: api
     tier: A
-    enabled: false                    # incomplete: see market_signals/collectors/trends.py
+    enabled: false                    # incomplete: see code/scraping/trends.py

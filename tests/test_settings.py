@@ -2,32 +2,32 @@ from pathlib import Path
 
 import pytest
 
-from market_signals import config
+from scraping import settings
 
 
 def test_project_root_contains_pyproject():
-    assert (config.PROJECT_ROOT / "pyproject.toml").is_file()
+    assert (settings.PROJECT_ROOT / "pyproject.toml").is_file()
 
 
 def test_data_dir_default_is_inside_project(monkeypatch):
     monkeypatch.delenv("MARKET_SIGNALS_DATA_DIR", raising=False)
-    assert config.data_dir() == config.PROJECT_ROOT / "data"
+    assert settings.data_dir() == settings.PROJECT_ROOT / "data"
 
 
 def test_data_dir_relative_override(monkeypatch):
     monkeypatch.setenv("MARKET_SIGNALS_DATA_DIR", "elsewhere")
-    assert config.data_dir() == config.PROJECT_ROOT / "elsewhere"
+    assert settings.data_dir() == settings.PROJECT_ROOT / "elsewhere"
 
 
 def test_layer_dir_creates_directory(monkeypatch, tmp_path):
     monkeypatch.setenv("MARKET_SIGNALS_DATA_DIR", str(tmp_path))
-    path = config.layer_dir("bronze", create=True)
-    assert path == tmp_path / "bronze" and path.is_dir()
+    path = settings.layer_dir("processed", create=True)
+    assert path == tmp_path / "processed" and path.is_dir()
 
 
 def test_layer_dir_rejects_unknown_layer():
     with pytest.raises(ValueError):
-        config.layer_dir("platinum")
+        settings.layer_dir("platinum")
 
 
 @pytest.mark.parametrize(
@@ -40,11 +40,11 @@ def test_layer_dir_rejects_unknown_layer():
     ],
 )
 def test_model_key(family, variant, expected):
-    assert config.model_key(family, variant) == expected
+    assert settings.model_key(family, variant) == expected
 
 
 def test_active_scope_matches_plan():
-    scope = config.load_active_scope()
+    scope = settings.load_active_scope()
     assert sorted(scope["active"]) == sorted(
         [
             "iphone-15",
@@ -67,4 +67,4 @@ def test_active_scope_rejects_overlap(tmp_path: Path):
     bad = tmp_path / "scope.yaml"
     bad.write_text("active:\n  iphone-16: [base]\nreference_only:\n  iphone-16: [base]\n", encoding="utf-8")
     with pytest.raises(ValueError, match="both active and reference_only"):
-        config.load_active_scope(bad)
+        settings.load_active_scope(bad)

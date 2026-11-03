@@ -11,11 +11,13 @@ from pathlib import Path
 
 import yaml
 
-PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent
+PROJECT_ROOT: Path = Path(__file__).resolve().parents[2]  # code/scraping/settings.py -> repo root
 CONFIG_DIR: Path = PROJECT_ROOT / "config"
-CATALOGUE_DIR: Path = PROJECT_ROOT / "catalogue"
 
-DATA_LAYERS = ("raw", "bronze", "silver", "gold", "meta")
+# Runtime outputs under data/ (git-ignored): raw = pages/JSON as fetched plus run logs and state in raw/_meta,
+# processed = cleaned tables, final = the weekly SKU table.
+DATA_LAYERS = ("raw", "processed", "final")
+META_SUBDIR = Path("raw") / "_meta"
 
 # Variant suffixes used in active_scope.yaml -> how they extend the family key.
 # "base" and "air" add nothing ("iphone-16", "iphone-air"); "e" is appended
@@ -34,7 +36,7 @@ def data_dir() -> Path:
 
 
 def layer_dir(layer: str, create: bool = False) -> Path:
-    """Directory for one data layer (raw, bronze, silver, gold, meta)."""
+    """Directory for one data layer (raw, processed, final)."""
     if layer not in DATA_LAYERS:
         raise ValueError(f"Unknown data layer {layer!r}; expected one of {DATA_LAYERS}")
     path = data_dir() / layer

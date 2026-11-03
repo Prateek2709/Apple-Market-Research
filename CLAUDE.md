@@ -4,6 +4,10 @@
 - The approved spec is `docs/iPhone 18 Demand Alt-Data Signal Plan.md`. Follow it; when code and plan disagree, raise it rather than silently diverging.
 - Progress and next steps live in `docs/IMPLEMENTATION_STATUS.md`. **Read it at the start of every session and update it at the end of every task.**
 
+## Layout
+- `code/scraping/` collectors + shared scraping utilities (importable package `scraping`; `code/` is not itself a package, to avoid shadowing the stdlib `code` module). Add `code/processing/`, `code/features/`, `code/scoring/` only when they are implemented.
+- `config/` settings and catalogue inputs (`sources.yaml`, `active_scope.yaml`, `model_specs.yaml`, `products.csv`, `reference_models.csv`, `listings.csv`). `docs/` plan and status. `tests/` offline tests. `run.py` is the single entry point.
+
 ## Scope guardrails
 - Build an independent external dataset only. Never use, join or infer from the distributor's internal order data.
 - Out of scope: forecasting, backtesting, inventory optimisation, dashboards, schedulers/cron/services, DG-specific adjustments.
@@ -13,20 +17,20 @@
 - Work task by task as instructed. Do not add collectors, features or scoring ahead of the task that asks for them, and do not create empty placeholder modules.
 
 ## Portability (cloud now, local Windows + Claude Desktop later)
-- Use `pathlib` and paths relative to `market_signals.config.PROJECT_ROOT`; never hard-code absolute paths or `/` / `\` separators.
+- Use `pathlib` and paths relative to `scraping.settings.PROJECT_ROOT`; never hard-code absolute paths or `/` / `\` separators.
 - Open text files with `encoding="utf-8"` explicitly (Windows defaults differ).
 - No cloud-specific dependencies, services or credentials. No shell-only scripts; entry points are Python.
 - Secrets come from environment variables / a local `.env` (git-ignored). Template: `.env.example`.
 - Data location: `data/` by default, override with `MARKET_SIGNALS_DATA_DIR`.
 
 ## Data rules
-- `data/raw/` is append-only; raw files are never modified. Everything under `data/` is git-ignored.
+- `data/raw/` is append-only; raw files are never modified (run logs and state live in `data/raw/_meta/`). `data/processed/` and `data/final/` are later stages. Everything under `data/` is git-ignored.
 - Keys: `sku_id = model|storage|colour`, `price_key = model|storage`, `model_key = model`. Price varies by model × storage, never by colour.
 - Weeks are Sunday–Saturday, identified by `week_start`. Timestamps stored in UTC plus IST date.
 - Scraping: respect robots.txt and site terms; polite rate limits; stop on any site that prohibits automated access.
 
 ## Collectors
-- Never write an HTML selector, API endpoint or response schema that has not been seen in a real response or official documentation. If it cannot be done reliably, ship a clearly marked incomplete implementation (see `collectors/retail.py`, `collectors/trends.py`).
+- Never write an HTML selector, API endpoint or response schema that has not been seen in a real response or official documentation. If it cannot be done reliably, ship a clearly marked incomplete implementation (see `code/scraping/retail.py`, `code/scraping/trends.py`).
 - Do not run live collection, call live APIs or generate datasets unless the task explicitly asks. Tests use only small, labelled in-memory fixtures and mocked HTTP.
 - Retail/scraped sources stay `enabled: false, terms_checked: false` in `config/sources.yaml` until their robots.txt and terms have been reviewed.
 - Secrets (API keys) are request parameters listed in `Target.secret_params`, so they never reach logs or provenance files.

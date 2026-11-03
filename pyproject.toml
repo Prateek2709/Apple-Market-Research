@@ -28,8 +28,9 @@ browser = ["playwright>=1.44"]
 dev = ["pytest>=8.0"]
 
 [tool.setuptools.packages.find]
-include = ["market_signals*"]
+where = ["code"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = [".", "code"]   # run.py at the root and the packages under code/ import without installing
 addopts = "-ra"

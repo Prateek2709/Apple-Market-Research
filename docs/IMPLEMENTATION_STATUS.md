@@ -3,8 +3,19 @@
 Spec: `docs/iPhone 18 Demand Alt-Data Signal Plan.md`. Update this file at the end of every task.
 
 ## Current state
-- **Last completed:** Task 3 – collection code (2026-11-03, Claude Code Web), written on `main`. Code only: **no live collection has been run, no data downloaded or generated.**
-- **Next:** awaiting Task 4. Before any live run: review each retailer's robots.txt/terms, set `terms_checked`/`enabled` in `config/sources.yaml`, fill `catalogue/listings.csv`, then do one supervised run per source (see "Collector status").
+- **Last completed:** Task 4 – repository reorganisation (2026-11-03). No new functionality. **No live collection has been run, no data downloaded or generated.**
+- **Next:** awaiting Task 4. Before any live run: review each retailer's robots.txt/terms, set `terms_checked`/`enabled` in `config/sources.yaml`, fill `config/listings.csv`, then do one supervised run per source (see "Collector status").
+
+## Current layout (Task 4)
+```
+run.py                      single entry point: collect | list | catalogue build|validate
+code/scraping/              package `scraping`: base, retail, wayback, wikipedia, financial, gdelt, youtube, trends,
+                            registry, match, parse, timeutil, settings (paths), catalogue (builder/validator)
+config/                     sources.yaml, active_scope.yaml, model_specs.yaml, products.csv, reference_models.csv, listings.csv
+data/raw|processed|final    runtime outputs, git-ignored (logs/state in data/raw/_meta/)
+docs/  tests/               plan + this file; offline tests
+```
+Task entries below record paths as they were at the time; `market_signals/*` became `code/scraping/*` and `catalogue/*` became `config/*`.
 
 ## Task log
 
@@ -23,7 +34,7 @@ Spec: `docs/iPhone 18 Demand Alt-Data Signal Plan.md`. Update this file at the e
 - `catalogue/reference_models.csv`: 13 price_key rows for reference-only models (14, 16e, 16 Pro, 16 Pro Max). Kept in a separate file because they have no colour grain; products.csv holds only `scope_status=active`.
 - Keys: `sku_id = model|storage|colour`, `price_key = model|storage`, `model_key`; storage tokens `128gb`…`1tb`, `2tb`; colour slugs lower-case hyphenated.
 - Predecessor mapping by exact storage only: 18 Pro 2TB, 17 Pro Max 2TB and all Air rows map to `none`.
-- Commands: `python -m market_signals.catalogue build` (regenerates CSVs) and `... validate` (also fails if CSVs are stale vs the specs).
+- Commands (now): `python run.py catalogue build` (regenerates CSVs) and `python run.py catalogue validate` (also fails if CSVs are stale vs the specs).
 - Tests: `tests/test_catalogue.py`; full suite **62 passed**.
 
 #### Task 2 verification caveats
@@ -40,7 +51,7 @@ Spec: `docs/iPhone 18 Demand Alt-Data Signal Plan.md`. Update this file at the e
 - Collectors: `retail.py` (Apple India, Amazon.in, Flipkart, Croma, Reliance Digital, Vijay Sales + Smartprix, 91mobiles, GSMArena), `wayback.py`, `wikipedia.py`, `financial.py` (yfinance, Frankfurter), `gdelt.py`, `youtube.py`, `trends.py`.
 - `match.py` (rules first, rapidfuzz fallback, plan thresholds; fuzzy-only matches are never auto-accepted), `parse.py` (`parse_inr`), `timeutil.py` (UTC/IST, Sunday-Saturday `week_start`).
 - `market_signals/run.py` + root `run.py`: `list`, `collect [--sources] [--since] [--dry-run]`. `python -m market_signals.collectors <source>` runs one source.
-- `config/sources.yaml` (retail/scrape sources ship disabled and unreviewed), `catalogue/listings.csv` (header only; hand-maintained list of pages to capture).
+- `config/sources.yaml` (retail/scrape sources ship disabled and unreviewed), `config/listings.csv` (header only; hand-maintained list of pages to capture).
 - Repo audit: no stray datasets or generated files were tracked. Retained: `catalogue/products.csv` and `reference_models.csv` (Task 2 output, regenerated from `model_specs.yaml` and checked by tests). Removed: `data/README.md` (duplicated the plan's layout; `data/` is created at run time and git-ignored) and the duplicated setup block in `CLAUDE.md` (README owns it). `pyproject.toml` trimmed to what the code uses; parsing libraries moved to the `curation` extra.
 - Tests: **118 passed** offline (mock HTTP, labelled fixtures).
 
@@ -53,6 +64,13 @@ Spec: `docs/iPhone 18 Demand Alt-Data Signal Plan.md`. Update this file at the e
 | Not implemented (per plan) | Reddit, Keepa, X, price-history sites, tracker press releases, `events.csv` | Optional/paid/manual |
 
 Other known gaps: bronze/silver writing and the `parse`/`clean` commands (next stage), listing → sku_id confirmation store, `competitor_groups.csv` and Android listings, `aliases.csv` (aliases are derived from the catalogue in `match.py`), CDX resumeKey pagination, YouTube `commentsDisabled` handling (counted as a failed fetch), Trends stitching.
+
+### Task 4 – Reorganisation ✅
+- Moved `market_signals/*` and `market_signals/collectors/*` into the single package `code/scraping/` (collectors flattened; `collectors/__init__.py` became `registry.py`; `config.py` became `settings.py`). `code/` is deliberately not a package so it cannot shadow Python's stdlib `code` module; `run.py` and pytest add it to the import path, so no install is required.
+- Moved `catalogue/*` to `config/`. Root `run.py` now holds the CLI (was `market_signals/run.py`) and also exposes the catalogue tools.
+- Data layout is now `data/raw`, `data/processed`, `data/final`; fetch/run logs and collection state moved from `data/meta/` to `data/raw/_meta/`. The plan's bronze/silver/gold names are not used by the code; the plan document is unchanged.
+- Removed: `market_signals/collectors/__main__.py` (second entry point duplicating `run.py collect --sources X`), the empty `market_signals/` and `catalogue/` folders. `.env.example` now holds placeholder values only and notes that the code reads environment variables (it does not load `.env`).
+- Tests: 118 passed offline, unchanged in number; catalogue CSVs unchanged.
 
 ## Plan sequence (from the spec)
 | # | Step | Status |

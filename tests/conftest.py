@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import httpx
 import pytest
 
-from market_signals.collectors.base import RunContext, SourceConfig
+from scraping.base import RunContext, SourceConfig
 
 NOW = datetime(2026, 11, 3, 10, 0, tzinfo=timezone.utc)
 

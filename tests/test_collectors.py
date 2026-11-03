@@ -7,11 +7,12 @@ from datetime import date
 import httpx
 import pytest
 
-from market_signals import match, parse, timeutil
-from market_signals import catalogue as cat
-from market_signals.collectors import REGISTRY, financial, gdelt, retail, trends, wayback, wikipedia, youtube
-from market_signals.collectors.base import IncompleteCollector, SourceConfig, load_sources
-from market_signals.run import gate, run_collect
+from scraping import catalogue as cat
+from scraping import match, parse, timeutil
+from scraping import financial, gdelt, retail, trends, wayback, wikipedia, youtube
+from scraping.registry import REGISTRY
+from scraping.base import IncompleteCollector, SourceConfig, load_sources
+from run import gate, run_collect
 from tests.conftest import NOW, Net, make_cfg
 
 # ---- FIXTURES -----------------------------------------------------------------------------------
@@ -246,7 +247,7 @@ def test_youtube_collects_charges_quota_and_hides_key(make_ctx, monkeypatch):
     searches = sum(r.url.path.endswith("/search") for r in net.requests)
     assert used == searches * 100 + (len(net.requests) - searches)  # search 100, every other call 1
     assert ctx.state.get("youtube:comments:vid1")["newest_ts"] == "2026-10-02T00:00:00Z"
-    logged = (ctx.data_dir / "meta" / "fetch_log.jsonl").read_text(encoding="utf-8")
+    logged = (ctx.data_dir / "raw" / "_meta" / "fetch_log.jsonl").read_text(encoding="utf-8")
     assert "KEY-ABC" not in logged
     for p in (ctx.data_dir / "raw").rglob("*.meta.json"):
         assert "KEY-ABC" not in p.read_text(encoding="utf-8")
@@ -353,7 +354,7 @@ def test_run_collect_isolates_failures_and_logs_run(make_ctx, monkeypatch):
     ctx = make_ctx(Net(json_ok(PV)))
     out = {s.source: s for s in run_collect(["trends", "youtube", "wikipedia"], ctx, sources)}
     assert out["trends"].status == "incomplete" and out["youtube"].status == "skipped" and out["wikipedia"].status == "ok"
-    (line,) = (ctx.data_dir / "meta" / "runs.jsonl").read_text(encoding="utf-8").splitlines()
+    (line,) = (ctx.data_dir / "raw" / "_meta" / "runs.jsonl").read_text(encoding="utf-8").splitlines()
     assert json.loads(line)["run_id"] == ctx.run_id
 
 

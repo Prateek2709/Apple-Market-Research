@@ -81,7 +81,7 @@ class YouTube(Collector):
 
     # --- targets
     def _models(self) -> dict[str, str]:
-        from market_signals import catalogue
+        from scraping import catalogue
 
         names: dict[str, str] = {}
         for path in (catalogue.PRODUCTS_PATH, catalogue.REFERENCE_PATH):

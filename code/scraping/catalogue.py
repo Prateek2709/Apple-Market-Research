@@ -1,8 +1,8 @@
-"""Build and validate the independent product catalogue (catalogue/products.csv).
+"""Build and validate the independent product catalogue (config/products.csv).
 
-Inputs : config/active_scope.yaml (what is in scope) and catalogue/model_specs.yaml (India facts).
-Outputs: catalogue/products.csv           one row per active model x storage x colour (sku_id grain)
-         catalogue/reference_models.csv   one row per reference-only model x storage (price_key grain;
+Inputs : config/active_scope.yaml (what is in scope) and config/model_specs.yaml (India facts).
+Outputs: config/products.csv             one row per active model x storage x colour (sku_id grain)
+         config/reference_models.csv   one row per reference-only model x storage (price_key grain;
                                           colour is not needed for predecessor comparisons)
 
 Keys (plan, "Final dataset and product catalogue"):
@@ -11,8 +11,8 @@ Keys (plan, "Final dataset and product catalogue"):
     model_key = model                      e.g. iphone-18-pro-max
 
 Nothing here fetches data; it only joins the two checked-in files. Run from the project root:
-    python -m market_signals.catalogue build
-    python -m market_signals.catalogue validate
+    python run.py catalogue build
+    python run.py catalogue validate
 """
 
 from __future__ import annotations
@@ -26,11 +26,11 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from market_signals import config
+from scraping import settings
 
-SPECS_PATH: Path = config.CATALOGUE_DIR / "model_specs.yaml"
-PRODUCTS_PATH: Path = config.CATALOGUE_DIR / "products.csv"
-REFERENCE_PATH: Path = config.CATALOGUE_DIR / "reference_models.csv"
+SPECS_PATH: Path = settings.CONFIG_DIR / "model_specs.yaml"
+PRODUCTS_PATH: Path = settings.CONFIG_DIR / "products.csv"
+REFERENCE_PATH: Path = settings.CONFIG_DIR / "reference_models.csv"
 
 PRODUCT_COLUMNS = [
     "sku_id", "price_key", "model_key", "model", "generation", "tier",
@@ -115,7 +115,7 @@ def build_catalogue(specs: dict | None = None, scope: dict[str, list[str]] | Non
                     ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Return (products, reference_models) for the models named in the active-scope config."""
     specs = specs or load_specs()
-    scope = scope or config.load_active_scope()
+    scope = scope or settings.load_active_scope()
     missing = [m for m in scope["active"] + scope["reference_only"] if m not in specs["models"]]
     if missing:
         raise ValueError(f"Models in active_scope.yaml with no entry in model_specs.yaml: {missing}")
@@ -145,7 +145,7 @@ def build_catalogue(specs: dict | None = None, scope: dict[str, list[str]] | Non
 def validate_catalogue(products: pd.DataFrame, reference: pd.DataFrame,
                        scope: dict[str, list[str]] | None = None) -> list[str]:
     """Return a list of problems (empty list = valid)."""
-    scope = scope or config.load_active_scope()
+    scope = scope or settings.load_active_scope()
     errors: list[str] = []
 
     # --- uniqueness and key consistency
@@ -241,7 +241,7 @@ def summary(products: pd.DataFrame, reference: pd.DataFrame) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="python -m market_signals.catalogue")
+    parser = argparse.ArgumentParser(prog="python run.py catalogue")
     parser.add_argument("command", choices=["build", "validate"])
     args = parser.parse_args(argv)
 
@@ -252,8 +252,8 @@ def main(argv: list[str] | None = None) -> int:
             print("\n".join(errors), file=sys.stderr)
             return 1
         write_catalogue(products, reference)
-        print(f"wrote {PRODUCTS_PATH.relative_to(config.PROJECT_ROOT)} and "
-              f"{REFERENCE_PATH.relative_to(config.PROJECT_ROOT)}")
+        print(f"wrote {PRODUCTS_PATH.relative_to(settings.PROJECT_ROOT)} and "
+              f"{REFERENCE_PATH.relative_to(settings.PROJECT_ROOT)}")
         print(summary(products, reference))
         return 0
 

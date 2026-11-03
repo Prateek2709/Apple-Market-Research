@@ -5,9 +5,9 @@ collector's collect() is called by the runner.
 
 Data written (all under data/, git-ignored, append-only raw):
     data/raw/<source>/<ist-date>/<utc-stamp>_<target-hash>.<ext>  + .meta.json sidecar (provenance)
-    data/meta/fetch_log.jsonl      one line per fetch attempt outcome (run_id, source, target, ts, status, bytes, ...)
-    data/meta/runs.jsonl           one line per run
-    data/meta/collect_state.json   incremental-collection state (covered ranges, cursors, quota ledger)
+    data/raw/_meta/fetch_log.jsonl one line per fetch attempt outcome (run_id, source, target, ts, status, bytes, ...)
+    data/raw/_meta/runs.jsonl      one line per run
+    data/raw/_meta/collect_state.json incremental-collection state (covered ranges, cursors, quota ledger)
 """
 
 from __future__ import annotations
@@ -29,9 +29,9 @@ import httpx
 import yaml
 from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from market_signals import __version__, config, timeutil
+from scraping import __version__, settings, timeutil
 
-SOURCES_PATH = config.CONFIG_DIR / "sources.yaml"
+SOURCES_PATH = settings.CONFIG_DIR / "sources.yaml"
 RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 RETRY_AFTER_CAP_S = 300.0
 DEFAULT_USER_AGENT = "market-signals-research/0.1 (personal research; set MARKET_SIGNALS_USER_AGENT)"
@@ -138,7 +138,11 @@ class RunContext:
     since: str | None = None  # ISO date; overrides stored state as the start of a window
 
     def __post_init__(self) -> None:
-        self.state = JsonState(self.data_dir / "meta" / "collect_state.json")
+        self.state = JsonState(self.meta_dir / "collect_state.json")
+
+    @property
+    def meta_dir(self) -> Path:
+        return self.data_dir / settings.META_SUBDIR
 
     # --- append-only raw layer
     def save_raw(self, source: str, target_key: str, content: bytes, ext: str, meta: dict[str, Any]) -> str:
@@ -164,7 +168,7 @@ class RunContext:
         return path.relative_to(self.data_dir).as_posix()
 
     def append_jsonl(self, name: str, record: dict[str, Any]) -> None:
-        path = self.data_dir / "meta" / name
+        path = self.meta_dir / name
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "a", encoding="utf-8", newline="\n") as fh:
             fh.write(json.dumps(record, sort_keys=True, default=str) + "\n")

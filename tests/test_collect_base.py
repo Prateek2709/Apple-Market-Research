@@ -2,12 +2,12 @@ import json
 
 import httpx
 
-from market_signals.collectors.base import Fetcher, JsonState, RateLimiter, Target, load_sources, parse_retry_after
+from scraping.base import Fetcher, JsonState, RateLimiter, Target, load_sources, parse_retry_after
 from tests.conftest import Net, make_cfg
 
 
 def log_lines(ctx):
-    p = ctx.data_dir / "meta" / "fetch_log.jsonl"
+    p = ctx.data_dir / "raw" / "_meta" / "fetch_log.jsonl"
     return [json.loads(x) for x in p.read_text(encoding="utf-8").splitlines()] if p.exists() else []
 
 
@@ -40,7 +40,7 @@ def test_gives_up_after_max_attempts_and_logs_failure(make_ctx):
     assert not out.ok and out.status == 500 and len(net.requests) == 3
     (line,) = log_lines(ctx)
     assert line["http_status"] == 500 and line["raw_path"] == "" and line["error"] == "HTTP 500"
-    assert not (ctx.data_dir / "raw").exists()  # nothing stored for failures
+    assert [d.name for d in (ctx.data_dir / "raw").iterdir()] == ["_meta"]  # no raw page stored for failures
 
 
 def test_transport_error_is_retried_then_logged(make_ctx):
@@ -78,7 +78,7 @@ def test_secret_params_never_reach_logs_or_provenance(make_ctx):
     ctx = make_ctx(Net(handler))
     t = Target("src", "k", "https://example.test/api", {"key": "SECRET123", "q": "x"}, secret_params=("key",))
     Fetcher(make_cfg(), ctx).fetch(t)
-    assert "SECRET123" not in (ctx.data_dir / "meta" / "fetch_log.jsonl").read_text(encoding="utf-8")
+    assert "SECRET123" not in (ctx.data_dir / "raw" / "_meta" / "fetch_log.jsonl").read_text(encoding="utf-8")
     ctx2 = make_ctx(Net(lambda r: httpx.Response(200, content=b"{}")))
     out = Fetcher(make_cfg(), ctx2).fetch(t)
     meta = (ctx2.data_dir / (out.raw_path + ".meta.json")).read_text(encoding="utf-8")

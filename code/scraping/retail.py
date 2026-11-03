@@ -1,7 +1,7 @@
 """Retail and spec-site collectors: Apple India, Amazon.in, Flipkart, Croma, Reliance Digital, Vijay Sales,
 and the Tier B sites Smartprix, 91mobiles, GSMArena.
 
-STATUS: fetch_only. These collectors read the pages listed in catalogue/listings.csv, check robots.txt and
+STATUS: fetch_only. These collectors read the pages listed in config/listings.csv, check robots.txt and
 the per-source gates in config/sources.yaml, and store each response unmodified in the raw layer with
 provenance. They do NOT parse pages. The plan's price_obs/offer_obs/stock/delivery/rating/review fields
 need each retailer's real markup, and no selector or embedded-JSON path is written here because none has
@@ -17,17 +17,17 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from market_signals import config
+from scraping import settings
 
 from .base import Collector, IncompleteCollector, Summary, Target
 
-LISTINGS_PATH: Path = config.CATALOGUE_DIR / "listings.csv"
+LISTINGS_PATH: Path = settings.CONFIG_DIR / "listings.csv"
 LISTING_COLUMNS = ["source", "url", "listing_id", "price_key", "sku_id", "pin_code", "page_type", "label"]
 PAGE_TYPES = {"product", "store", "ranking", "spec"}
 
 
 def load_listings(path: Path | None = None) -> list[dict[str, str]]:
-    """Read catalogue/listings.csv (hand-maintained list of pages to capture). Header-only is valid."""
+    """Read config/listings.csv (hand-maintained list of pages to capture). Header-only is valid."""
     path = path or LISTINGS_PATH
     with open(path, encoding="utf-8", newline="") as fh:
         reader = csv.DictReader(fh)
@@ -78,7 +78,7 @@ class RetailCollector(Collector):
         targets = self.plan()
         summary = self._summary(planned=len(targets))
         if not targets:
-            summary.status, summary.note = "skipped", f"no {self.name} rows in catalogue/listings.csv"
+            summary.status, summary.note = "skipped", f"no {self.name} rows in config/listings.csv"
             return summary
         fetcher = Fetcher(self.cfg, self.ctx)
         try:

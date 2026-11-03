@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-from market_signals import catalogue as cat
-from market_signals import config
+from scraping import catalogue as cat
+from scraping import settings
 
 
 @pytest.fixture(scope="module")
@@ -78,7 +78,7 @@ def test_reference_models_have_no_active_rows(products, reference):
 
 def test_scope_change_needs_no_code_change():
     """Dropping a model from the scope config removes it from the build."""
-    scope = config.load_active_scope()
+    scope = settings.load_active_scope()
     scope["active"] = [m for m in scope["active"] if m != "iphone-15"]
     scope["reference_only"] = scope["reference_only"] + []  # 14 stays a harmless reference
     products, _ = cat.build_catalogue(scope=scope)
@@ -86,7 +86,7 @@ def test_scope_change_needs_no_code_change():
 
 
 def test_scope_model_without_specs_is_an_error():
-    scope = config.load_active_scope()
+    scope = settings.load_active_scope()
     scope["active"] = scope["active"] + ["iphone-19"]
     with pytest.raises(ValueError, match="iphone-19"):
         cat.build_catalogue(scope=scope)
