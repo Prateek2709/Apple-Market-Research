@@ -1,0 +1,13 @@
+# Which iPhone families are in scope. Every stage reads this file, so a model is
+# added or removed here without code changes (plan: "Configurable scope").
+# active: rows in the final weekly SKU table.
+# reference_only: kept only for predecessor comparisons (launch MRP, Trends, retail prices).
+active:
+  iphone-15:  [base]
+  iphone-16:  [base]
+  iphone-17:  [base, e, pro, pro-max]
+  iphone-18:  [pro, pro-max]
+  iphone-air: [air]
+reference_only:
+  iphone-14:  [base]
+  iphone-16:  [e, pro, pro-max]

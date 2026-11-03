@@ -1,0 +1,51 @@
+# --- Secrets and credentials ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials*.json
+client_secret*.json
+service_account*.json
+token*.json
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Data layers and generated outputs (see docs plan: raw/bronze/silver/gold/meta) ---
+data/*
+!data/README.md
+outputs/
+reports/
+*.parquet
+*.duckdb
+*.duckdb.wal
+review_queue/
+logs/
+*.log
+
+# --- Python build / cache ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Notebooks ---
+.ipynb_checkpoints/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
